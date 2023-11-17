@@ -18,12 +18,12 @@ app.use(cors({
 
 let User = require('./models/User');
 
-mongoose.connect('mongodb://127.0.0.1:27017/fullstackTodoApp_')
+mongoose.connect('mongodb+srv://Vaibhav:Vaibhav3549@cluster0.j3oxtv3.mongodb.net/?retryWrites=true&w=majority')
 .then(()=>{
     console.log('Database connection successful!')
 })
-.catch(()=>{
-    console.log('Database connection failed!')
+.catch((err)=>{
+    console.log('Database connection failed!',err)
 })
 
 app.post('/signup',async(req,res)=>{
@@ -49,7 +49,7 @@ app.post('/signin',async(req,res)=>{
         let correctPassword = await bcrypt.compare(password,userExist.password);
         if(correctPassword){
             let token = jwt.sign({_id:userExist._id},process.env.secret);
-            return res.status(201).json({token,email});
+            return res.status(201).json({token,email,firstName:userExist.firstName});
         }
         else{
             return res.status(401).json({error:"Incorrect email or password!"});
@@ -59,6 +59,7 @@ app.post('/signin',async(req,res)=>{
         return res.status(401).json({error:"You need to signup first!"});
     }
 })
+
 
 
 
