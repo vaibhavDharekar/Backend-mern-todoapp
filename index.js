@@ -17,6 +17,7 @@ app.use(cors({
 
 
 let User = require('./models/User');
+let Task = require('./models/Task')
 
 mongoose.connect('mongodb+srv://Vaibhav:Vaibhav3549@cluster0.j3oxtv3.mongodb.net/?retryWrites=true&w=majority')
 .then(()=>{
@@ -52,12 +53,35 @@ app.post('/signin',async(req,res)=>{
             return res.status(201).json({token,email,firstName:userExist.firstName});
         }
         else{
-            return res.status(401).json({error:"Incorrect email or password!"});
+            return res.status(401).json({error:"Incorrect email or password!",errroCode:2});
         }
     }
     else{
-        return res.status(401).json({error:"You need to signup first!"});
+        return res.status(401).json({error:"You need to signup first!",errorCode:1});
     }
+})
+app.post('/addTask',async(req,res)=>{
+    let{authorization} = req.headers;
+    let id;
+    if(!authorization){
+        return res.status(401).json({error:"You must be logged in A"});
+    }
+    else{
+        let token = authorization.replace('Bearer ',"");
+        jwt.verify(token,process.env.secret,(error,payload)=>{
+            if(error){
+                return res.status(401).json({error:"You must be logged in B"})
+            }
+            id = payload._id;  
+        })
+        let user = await User.findOne({_id:id});
+        console.log('user is ',user);
+        userEmail = user.email;   
+    }
+    const {task} = req.body;
+    const newTask = new Task({taskTitle : task, completed : false,email:userEmail});
+    await newTask.save();
+    return res.status(201).json({msg:'Task added successfully'});
 })
 
 
