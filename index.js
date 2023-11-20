@@ -75,17 +75,65 @@ app.post('/addTask',async(req,res)=>{
             id = payload._id;  
         })
         let user = await User.findOne({_id:id});
-        console.log('user is ',user);
         userEmail = user.email;   
     }
     const {task} = req.body;
     const newTask = new Task({taskTitle : task, completed : false,email:userEmail});
     await newTask.save();
-    return res.status(201).json({msg:'Task added successfully'});
+    let tasks = await Task.find({email:userEmail});
+    return res.status(201).json({msg:'Task added successfully',tasks});
 })
 
+app.get('/showTasks',async(req,res)=>{
+    let{authorization} = req.headers;
+    console.log('authorization',authorization)
+    let id;
+    let userEmail;
+    if(!authorization){
+        return res.status(401).json({error:"You must be logged in A"});
+    }
+    else{
+        let token = authorization.replace('Bearer ',"");
+        jwt.verify(token,process.env.secret,(error,payload)=>{
+            if(error){
+
+                return res.status(401).json({error:"You must be logged in B"})
+            }
+            id = payload._id;  
+        })
+        let user = await User.findOne({_id:id});
+        userEmail = user.email;   
+    }
+    const allTasks = await Task.find({email:userEmail});
+    console.log(allTasks);
+    return res.status(201).json({allTasks});
+})
+
+app.get('/taskDone',async(req,res)=>{
+    let{authorization} = req.headers;
+    console.log('authorization',authorization)
+    let id;
+    let userEmail;
+    if(!authorization){
+        return res.status(401).json({error:"You must be logged in A"});
+    }
+    else{
+        let token = authorization.replace('Bearer ',"");
+        jwt.verify(token,process.env.secret,(error,payload)=>{
+            if(error){
+
+                return res.status(401).json({error:"You must be logged in B"})
+            }
+            id = payload._id;  
+        })
+        let user = await User.findOne({_id:id});
+        userEmail = user.email;   
+    }
+    await Task.updateMany({email:userEmail},{completed:true});
 
 
+    return res.status(201).json();
+})
 
 app.listen(process.env.port,()=>{
     console.log('listening on port 8080');
