@@ -109,8 +109,9 @@ app.get('/showTasks',async(req,res)=>{
     return res.status(201).json({allTasks});
 })
 
-app.get('/taskDone',async(req,res)=>{
+app.get('/taskDone/:taskId',async(req,res)=>{
     let{authorization} = req.headers;
+    let {taskId} = req.params;
     console.log('authorization',authorization)
     let id;
     let userEmail;
@@ -129,10 +130,10 @@ app.get('/taskDone',async(req,res)=>{
         let user = await User.findOne({_id:id});
         userEmail = user.email;   
     }
-    await Task.updateMany({email:userEmail},{completed:true});
-
-
-    return res.status(201).json();
+    await Task.findOneAndUpdate({_id:taskId},{completed:true});
+    let allTasks = await Task.find({email:userEmail});
+    console.log('allTasks frmm line 135',allTasks)
+    return res.status(201).json({allTasks});
 })
 
 app.listen(process.env.port,()=>{
