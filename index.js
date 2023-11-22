@@ -19,7 +19,7 @@ app.use(cors({
 let User = require('./models/User');
 let Task = require('./models/Task')
 
-mongoose.connect('mongodb+srv://Vaibhav:Vaibhav3549@cluster0.j3oxtv3.mongodb.net/?retryWrites=true&w=majority')
+mongoose.connect(process.env.DATABASE)
 .then(()=>{
     console.log('Database connection successful!')
 })
@@ -28,7 +28,7 @@ mongoose.connect('mongodb+srv://Vaibhav:Vaibhav3549@cluster0.j3oxtv3.mongodb.net
 })
 
 app.post('/signup',async(req,res)=>{
-    let {email,password,firstName,lastName} = req.body;console.log(email,password,firstName,lastName)
+    let {email,password,firstName,lastName} = req.body;
     let newUser = await User.findOne({email});
     if(newUser){
         return res.status(404).json({error:"User already exist!"})
@@ -49,7 +49,7 @@ app.post('/signin',async(req,res)=>{
     if(userExist){
         let correctPassword = await bcrypt.compare(password,userExist.password);
         if(correctPassword){
-            let token = jwt.sign({_id:userExist._id},process.env.secret);
+            let token = jwt.sign({_id:userExist._id},process.env.SECRET);
             return res.status(201).json({token,email,firstName:userExist.firstName});
         }
         else{
@@ -68,7 +68,7 @@ app.post('/addTask',async(req,res)=>{
     }
     else{
         let token = authorization.replace('Bearer ',"");
-        jwt.verify(token,process.env.secret,(error,payload)=>{
+        jwt.verify(token,process.env.SECRET,(error,payload)=>{
             if(error){
                 return res.status(401).json({error:"You must be logged in B"})
             }
@@ -94,7 +94,7 @@ app.get('/showTasks',async(req,res)=>{
     }
     else{
         let token = authorization.replace('Bearer ',"");
-        jwt.verify(token,process.env.secret,(error,payload)=>{
+        jwt.verify(token,process.env.SECRET,(error,payload)=>{
             if(error){
 
                 return res.status(401).json({error:"You must be logged in B"})
@@ -120,7 +120,7 @@ app.get('/taskDone/:taskId',async(req,res)=>{
     }
     else{
         let token = authorization.replace('Bearer ',"");
-        jwt.verify(token,process.env.secret,(error,payload)=>{
+        jwt.verify(token,process.env.SECRET,(error,payload)=>{
             if(error){
 
                 return res.status(401).json({error:"You must be logged in B"})
@@ -136,6 +136,6 @@ app.get('/taskDone/:taskId',async(req,res)=>{
     return res.status(201).json({allTasks});
 })
 
-app.listen(process.env.port,()=>{
+app.listen(process.env.PORT,()=>{
     console.log('listening on port 8080');
 })
