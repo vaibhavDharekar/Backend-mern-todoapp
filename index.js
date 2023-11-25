@@ -18,7 +18,7 @@ app.use(cors({
 
 let User = require('./models/User');
 let Task = require('./models/Task')
-
+let checkLogin = require('./middlewares/checkLogin')
 mongoose.connect(process.env.DATABASE)
 .then(()=>{
     console.log('Database connection successful!')
@@ -60,23 +60,9 @@ app.post('/signin',async(req,res)=>{
         return res.status(401).json({error:"You need to signup first!",errorCode:1});
     }
 })
-app.post('/addTask',async(req,res)=>{
-    let{authorization} = req.headers;
-    let id;
-    if(!authorization){
-        return res.status(401).json({error:"You must be logged in A"});
-    }
-    else{
-        let token = authorization.replace('Bearer ',"");
-        jwt.verify(token,process.env.SECRET,(error,payload)=>{
-            if(error){
-                return res.status(401).json({error:"You must be logged in B"})
-            }
-            id = payload._id;  
-        })
-        let user = await User.findOne({_id:id});
-        userEmail = user.email;   
-    }
+app.post('/addTask',checkLogin,async(req,res)=>{
+    let user = req.user;
+    let userEmail = user.email;
     const {task} = req.body;
     const newTask = new Task({taskTitle : task, completed : false,email:userEmail});
     await newTask.save();
@@ -84,55 +70,45 @@ app.post('/addTask',async(req,res)=>{
     return res.status(201).json({msg:'Task added successfully',tasks});
 })
 
-app.get('/showTasks',async(req,res)=>{
-    let{authorization} = req.headers;
-    console.log('authorization',authorization)
-    let id;
-    let userEmail;
-    if(!authorization){
-        return res.status(401).json({error:"You must be logged in A"});
-    }
-    else{
-        let token = authorization.replace('Bearer ',"");
-        jwt.verify(token,process.env.SECRET,(error,payload)=>{
-            if(error){
-
-                return res.status(401).json({error:"You must be logged in B"})
-            }
-            id = payload._id;  
-        })
-        let user = await User.findOne({_id:id});
-        userEmail = user.email;   
-    }
+app.get('/showTasks',checkLogin,async(req,res)=>{
+    let user = req.user;
+    let userEmail = user.email;
     const allTasks = await Task.find({email:userEmail});
-    console.log(allTasks);
     return res.status(201).json({allTasks});
 })
 
-app.get('/taskDone/:taskId',async(req,res)=>{
-    let{authorization} = req.headers;
+app.get('/taskDone/:taskId',checkLogin,async(req,res)=>{
     let {taskId} = req.params;
-    console.log('authorization',authorization)
-    let id;
-    let userEmail;
-    if(!authorization){
-        return res.status(401).json({error:"You must be logged in A"});
-    }
-    else{
-        let token = authorization.replace('Bearer ',"");
-        jwt.verify(token,process.env.SECRET,(error,payload)=>{
-            if(error){
-
-                return res.status(401).json({error:"You must be logged in B"})
-            }
-            id = payload._id;  
-        })
-        let user = await User.findOne({_id:id});
-        userEmail = user.email;   
-    }
-    await Task.findOneAndUpdate({_id:taskId},{completed:true});
+    let user = req.user;
+    let userEmail = user.email;
+    let task = await Task.findOne({_id:taskId});
+    await Task.updateOne({_id:taskId},{completed:!task.completed})
     let allTasks = await Task.find({email:userEmail});
-    console.log('allTasks frmm line 135',allTasks)
+    return res.status(201).json({allTasks});
+})
+app.get('/taskEdit/:taskId',checkLogin,async(req,res)=>{
+    let {taskId} = req.params;
+    let user = req.user;
+    let userEmail = user.email;
+    await Task.findOneAndUpdate({_id:taskId},{editing:true});
+    let allTasks = await Task.find({email:userEmail});
+    return res.status(201).json({allTasks});
+})
+app.post('/taskEdit/:taskId',checkLogin,async(req,res)=>{
+    let {taskId} = req.params;
+    let user = req.user;
+    let {task} = req.body;
+    let userEmail = user.email;
+    await Task.findOneAndUpdate({_id:taskId},{editing:false,taskTitle:task});
+    let allTasks = await Task.find({email:userEmail});
+    return res.status(201).json({allTasks});
+})
+app.get('/taskDelete/:taskId',checkLogin,async(req,res)=>{
+    let {taskId} = req.params;
+    let user = req.user;
+    let userEmail = user.email;
+    await Task.findOneAndDelete({_id:taskId});
+    let allTasks = await Task.find({email:userEmail});
     return res.status(201).json({allTasks});
 })
 

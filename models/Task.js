@@ -6,6 +6,9 @@ const taskSchema = new mongoose.Schema({
     completed : {
         type:Boolean,
         default:false},
+    editing : {
+        type:Boolean,
+        default:false},
     email:{
         type: String
     },
