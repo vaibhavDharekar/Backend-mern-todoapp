@@ -2,6 +2,7 @@ const mongoose = require('mongoose');
 const taskSchema = new mongoose.Schema({
     taskTitle:{
         type: String,
+        required:[true,"Adding task is required"]
     },
     completed : {
         type:Boolean,
