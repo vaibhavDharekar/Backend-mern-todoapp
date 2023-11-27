@@ -16,7 +16,7 @@ app.use(cors({
   }))
 
 
-let User = require('./models/User');
+let User = require('./models/User_');
 let Task = require('./models/Task')
 let checkLogin = require('./middlewares/checkLogin')
 let validateForm = require('./utils/validateForm');
