@@ -20,6 +20,7 @@ let User = require('./models/User');
 let Task = require('./models/Task')
 let checkLogin = require('./middlewares/checkLogin')
 let validateForm = require('./utils/validateForm');
+let port = process.env.PORT || 5000
 
 mongoose.connect(process.env.DATABASE)
 .then(()=>{
@@ -170,6 +171,6 @@ app.get('/taskDelete/:taskId',checkLogin,async(req,res)=>{
     }
 })
 
-app.listen(process.env.PORT,()=>{
-    console.log('listening on port 8080');
+app.listen(port,()=>{
+    console.log('listening on port ',port);
 })
