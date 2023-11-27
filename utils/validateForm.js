@@ -1,5 +1,6 @@
 function validateEmail(email) {
     let emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    console.log('emailRegex',emailRegex.test(email))
     return emailRegex.test(email);
   }
 
@@ -18,7 +19,7 @@ const validateForm = (email,password,firstName,lastName)=>{
         if(!validateEmail(email))
         return "Invalid email format"
         vals.forEach((val,idx)=>{
-            if(val.length > 20)
+            if(val.length > 25)
             msg = `${strVals[idx]} must be less than 20 characters`;
         })
         return msg;
@@ -27,3 +28,4 @@ const validateForm = (email,password,firstName,lastName)=>{
         return  "All fields are mandetory!";
     }
 }
+module.exports = validateForm;

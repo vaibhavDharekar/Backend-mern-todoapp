@@ -8,12 +8,7 @@ require('dotenv').config();
 const app = express();
 app.use(express.json());
 app.use(express.urlencoded({extended:true}));
-app.use(cors({
-    origin: 'http://localhost:3000',  // Replace with the URL of your React app
-    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
-    credentials: true,
-    optionsSuccessStatus: 204,
-  }))
+app.use(cors())
 
 
 let User = require('./models/User_');
@@ -34,10 +29,12 @@ mongoose.connect(process.env.DATABASE)
 
 
 app.post('/signup',async(req,res)=>{
-    let validated = validateForm();
-    try{
     let {email,password,firstName,lastName} = req.body;
-    if(!validated){
+    let validated = validateForm(email,password,firstName,lastName);
+    console.log(validated)
+    try{
+    
+    if(validated){
         return res.status(500).json({errorMessage:validated,statusCode:500})
     }
 
