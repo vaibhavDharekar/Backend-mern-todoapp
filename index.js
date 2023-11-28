@@ -30,12 +30,11 @@ mongoose.connect(process.env.DATABASE)
 
 app.post('/signup',async(req,res)=>{
     let {email,password,firstName,lastName} = req.body;
-    let validated = validateForm(email,password,firstName,lastName);
-    console.log(validated)
+    let formErrors = validateForm(email,password,firstName,lastName);
     try{
     
-    if(validated){
-        return res.status(500).json({errorMessage:validated,statusCode:500})
+    if(Object.keys(formErrors).length){
+        return res.status(500).json({errors:formErrors,statusCode:500})
     }
 
 
@@ -53,7 +52,7 @@ app.post('/signup',async(req,res)=>{
     }
     }
     catch(err){
-        let statusCode = err.statusCode || 500;
+        let statusCode = err?.statusCode || 500;
         return res.status(err.statusCode).json({errorMessage:err.message,statusCode});
     }
 })
@@ -166,6 +165,9 @@ app.get('/taskDelete/:taskId',checkLogin,async(req,res)=>{
     catch(err){
         return res.status(500).json({errorMessage:err.message,statusCode:500})
     }
+})
+app.get('/testing',(req,res)=>{
+return res.status(201).json({"test":"successful"})
 })
 
 app.listen(port,()=>{
